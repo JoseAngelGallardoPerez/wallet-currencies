@@ -1,0 +1,43 @@
+syntax="proto3";
+
+package velmie.wallet.currencies;
+option go_package = "currencies";
+
+message CurrencyReq {
+  uint32 id = 1;
+  string code = 2;
+}
+
+message CurrencyResp {
+  uint32 id = 1;
+  string code = 2;
+  bool active = 3;
+  int32 decimalPlaces = 4;
+}
+
+message CurrenciesResp {
+  repeated CurrencyResp currencies = 1;
+}
+
+message CurrenciesRateValueRequest {
+  uint32 currencyIdFrom = 1;
+  uint32 currencyIdTo = 2;
+  string currencyCodeFrom = 3;
+  string currencyCodeTo = 4;
+}
+
+message CurrenciesRateValueResponse {
+  string value = 1;
+}
+
+message CurrenciesRateResponse {
+  string value = 1;
+  string exchangeMargin = 2;
+}
+
+service CurrencyFetcher {
+  rpc GetMain(CurrencyReq) returns (CurrencyResp);
+  rpc GetCurrency(CurrencyReq) returns (CurrencyResp);
+  rpc GetCurrenciesRateByCodes(CurrenciesRateValueRequest) returns (CurrenciesRateResponse);
+  rpc GetCurrenciesRateValueByCodes(CurrenciesRateValueRequest) returns (CurrenciesRateValueResponse);
+}
