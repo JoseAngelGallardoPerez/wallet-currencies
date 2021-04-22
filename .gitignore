@@ -1,0 +1,9 @@
+helm/values-dev.yaml
+run.sh
+service_currencies
+tilt.yaml
+velmie_wallet_service
+
+.idea/
+tilt_modules/
+vendor/
