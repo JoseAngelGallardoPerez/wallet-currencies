@@ -1,0 +1,763 @@
+openapi: 3.0.2
+info:
+  version: "0.0.1"
+  title: Wallet Currency Service
+  description: |
+    Server uses rfc3339 for time in request and in response.
+security:
+  - bearerAuth: []
+paths:
+  '/currencies/private/v1/currencies/{id}':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Currency
+      summary: Shows a currency by passed id.
+      description: Available for all logged in users.
+      operationId: showCurrency
+      parameters:
+        - $ref: '#/components/parameters/currencyPathID'
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Currency'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/private/v1/currencies':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Currency
+      summary: Shows list of currencies.
+      description: |
+        Available for all logged in users. Shows all currencies if filters are not applied.
+      operationId: indexCurrencies
+      parameters:
+        - $ref: '#/components/parameters/typeFilter'
+        - $ref: '#/components/parameters/activeCurrencyFilter'
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Currency'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/private/v1/admin/currencies':
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Currency
+      summary: Creates a new currency(only root).
+      description: Available only if the "Custom Currency" extension is active. Available only for root.
+      operationId: createCurrency
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminCurrency'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCurrency'
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Currency
+      summary: Shows a list of currencies.
+      description: Available for admins who has "view_modify_settings" permission.
+      operationId: indexAdminCurrencies
+      parameters:
+        - $ref: '#/components/parameters/typeFilter'
+        - $ref: '#/components/parameters/activeCurrencyFilter'
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminCurrency'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - Currency
+      summary: Updates currencies by passed ids.
+      description: |
+        Available for admins who has "view_modify_settings" permission.
+        \
+        Allows to update "active" field for currencies.
+      operationId: updateCurrenciesPatch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateCurrency'
+              required:
+                - data
+      responses:
+        204:
+          description: Successful request
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/private/v1/admin/currencies/{id}':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Currency
+      summary: Shows currency by passed id.
+      description: Available for admins who has "view_modify_settings" permission.
+      operationId: showAdminCurrency
+      parameters:
+        - $ref: '#/components/parameters/currencyPathID'
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/AdminCurrency'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+
+  '/currencies/private/v1/admin/settings/main':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Settings
+      summary: Shows current settings.
+      description: |
+        Available for admins who has "view_modify_settings" permission.
+        \
+        Used to get current main currency and status of rates auto updating.
+      operationId: showSettings
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Settings'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Settings
+      summary: Updates settings.
+      description: |
+        Available for admins who has "view_modify_settings" permission.
+        \
+        Auto updating is available only for EUR as main currency.
+      operationId: putSettings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  $ref: '#/components/schemas/Settings'
+              required:
+                - data
+        required: true
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Settings'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - Settings
+      summary: Updates settings.
+      description: |
+        Available for admins who has "view_modify_settings" permission.
+        \
+        Auto updating is available only for EUR as main currency.
+      operationId: patchSettings
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Settings'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+
+  '/currencies/private/v1/rates/main':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Rates
+      summary: Shows list of rates for current main currency.
+      description: |
+        Available for admins who has "view_modify_settings" permission.
+        \
+        Shows rate with exchange margin with from/to curerncies.
+      operationId: showRates
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rate'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/private/v1/rates/pair':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Rates
+      summary: Shows rate and exchange margin for two currencies.
+      description: Avaialable for all logged in users.
+      operationId: showRateByCurrencies
+      parameters:
+        - name: baseCurrencyCode
+          in: query
+          description: Base currency code ("from").
+          required: true
+          schema:
+            type: string
+            example: EUR
+        - name: referenceCurrencyCode
+          in: query
+          description: Reference currency code ("to").
+          required: true
+          schema:
+            type: string
+            example: USD
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RateAndMargin'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/private/v1/admin/rates':
+    patch:
+      security:
+        - bearerAuth: []
+      tags:
+        - Rates
+      summary: Updates rates.
+      description: |
+        Available for admins who has "view_modify_settings" permission.
+        \
+        Can update rate value and exchange margin by rate id.
+      operationId: patchRates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateRate'
+              required:
+                - data
+      responses:
+        204:
+          description: Successful request
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/private/v1/admin/extensions/custom-currency/activity':
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Extensions
+        - Currency
+      summary: Retrieves "Custom Currency" extension activity status.
+      description: The activity status determines if admin is allowed to add currencies to the system.
+      operationId: getCustomCurrencyActivityStatus
+      responses:
+        200:
+          description: Successful request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ExtensionActivity'
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenResponse'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestResponse'
+
+  '/currencies/health-check':
+    get:
+      tags:
+        - Utils
+      summary: Returns 200 status with "ok" message.
+      description: Used to get currencies service status.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Successful request
+          content:
+            text/html:
+              schema:
+                type: string
+                example: ok
+
+components:
+  schemas:
+    CreateCurrency:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "EUR"
+        isActive:
+          type: boolean
+        type:
+          type: string
+          example: fiat
+          enum: ["fiat", "crypto", "other"]
+        decimalPlaces:
+          type: integer
+          example: 2
+          format: uint8
+        name:
+          type: string
+      required:
+        - code
+        - isActive
+        - type
+        - decimalPlaces
+    AdminCurrency:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+        code:
+          type: string
+          example: EUR
+        active:
+          type: boolean
+          default: false
+        type:
+          type: string
+          example: fiat
+        feed:
+          type: string
+        decimalPlaces:
+          type: integer
+    Currency:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+        code:
+          type: string
+        name:
+          type: string
+        decimalPlaces:
+          type: integer
+          format: uint8
+        type:
+          type: string
+          example: crypto
+        active:
+          type: boolean
+    Settings:
+      type: object
+      properties:
+        mainCurrencyId:
+          type: integer
+          format: uint32
+        autoUpdatingRates:
+          type: boolean
+    Rate:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+        value:
+          type: string
+          example: "123.06"
+        exchangeMargin:
+          type: string
+          example: "321.87"
+        currencyFrom:
+          $ref: '#/components/schemas/Currency'
+        currencyTo:
+          $ref: '#/components/schemas/Currency'
+
+    RateAndMargin:
+      type: object
+      properties:
+        rateValue:
+          type: string
+          example: "123.456"
+        exchangeMargin:
+          type: string
+          format: decimal
+          example: "123.456"
+        baseCurrencyCode:
+          type: string
+          example: "EUR"
+        referenceCurrencyCode:
+          type: string
+          example: "USD"
+
+    UpdateCurrency:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+          example: 1
+        active:
+          type: boolean
+          example: false
+      required:
+        - id
+        - active
+
+    UpdateRate:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: uint32
+        value:
+          type: string
+          example: "123.06"
+          description: Must be a valid decimal number.
+        exchangeMargin:
+          type: string
+          example: "321.87"
+          description: Must be a valid decimal number and greater than zero.
+      required:
+        - id
+    ConflictResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseError'
+    BadRequestResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseError'
+    NotFoundResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseError'
+    ForbiddenResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseError'
+    ResponseError:
+      type: object
+      properties:
+        title:
+          type: string
+          example: value should be greater than
+        details:
+          type: string
+          example: ""
+        code:
+          type: string
+          example: DECIMAL_GT_VALIDATION
+        source:
+          type: string
+          example: value
+        target:
+          type: string
+          example: field
+        meta:
+          type: object
+          properties:
+            value:
+              type: string
+              example: 0
+    ExtensionActivity:
+      type: object
+      properties:
+        isActive:
+          type: boolean
+          description: extension activity status
+  parameters:
+    typeFilter:
+      name: filter[type]
+      in: query
+      description: Applies filter by money type.
+      schema:
+        type: string
+        enum:
+          - fiat
+          - crypto
+    activeCurrencyFilter:
+      name: filter[active]
+      in: query
+      description: Applies filter by active currencies.
+      schema:
+        type: string
+        enum:
+          - true
+          - false
+    currencyPathID:
+      name: id
+      in: path
+      description: Id of a currency to show. Integer value or "main". Returns main currency if "main" id is passed.
+      required: true
+      schema:
+        type: string
+        format: uint32 or "main"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
